@@ -1,6 +1,6 @@
 # TasteScout 🧭
 
-**Live demo:** https://tastescout-adiof9vm6xlqkuungpetrq.streamlit.app
+**Live demo:** https://tastescout-adiof9vm6xlqkuungpetrq.streamlit.app · **Video:** https://youtu.be/86kGpRrVh9w
 
 An AI agent for small businesses. Tell it your business and your neighborhood; it
 queries Qloo's Taste AI™ to map what people around you love (places, brands,
