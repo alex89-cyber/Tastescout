@@ -113,6 +113,7 @@ def render_calendar_and_pdf(llm, model, answer, title, subtitle):
             calendar,
             hide_index=True,
             width="stretch",
+            height=36 * (len(calendar) + 1) + 4,
             column_config={"semana": "Semana", "dia": "Día", "formato": "Formato", "tema": "Tema", "inspiracion": "Inspiración (Qloo)"},
         )
     st.download_button(
