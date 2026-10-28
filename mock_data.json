@@ -1,0 +1,161 @@
+{
+ "_nota": "Datos falsos para probar la interfaz sin key. No son de Qloo.",
+ "entities": [
+  {
+   "entity_id": "ac6bf9c5-e3e4-5bfc-945c-a59de5f18f6e",
+   "name": "Café de especialidad (ejemplo)",
+   "types": [
+    "urn:entity:place"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.91
+   },
+   "tags": [
+    {
+     "name": "Coffee"
+    },
+    {
+     "name": "Brunch"
+    }
+   ]
+  },
+  {
+   "entity_id": "bc10c0ef-aad3-584c-b28f-454ccca973a4",
+   "name": "Panadería artesanal (ejemplo)",
+   "types": [
+    "urn:entity:place"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.87
+   },
+   "tags": [
+    {
+     "name": "Bakery"
+    },
+    {
+     "name": "Vegan options"
+    }
+   ]
+  },
+  {
+   "entity_id": "276ab484-4dab-5b91-a25e-2246e723800c",
+   "name": "Bar de vinos naturales (ejemplo)",
+   "types": [
+    "urn:entity:place"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.82
+   },
+   "tags": [
+    {
+     "name": "Wine bar"
+    }
+   ]
+  },
+  {
+   "entity_id": "b07ed98e-aaa0-5f17-a6ac-f19b762631ef",
+   "name": "Marca de ropa sustentable (ejemplo)",
+   "types": [
+    "urn:entity:brand"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.88
+   },
+   "tags": [
+    {
+     "name": "Sustainable"
+    },
+    {
+     "name": "Streetwear"
+    }
+   ]
+  },
+  {
+   "entity_id": "ca089b48-5c97-5ecc-91f3-9fc19249c410",
+   "name": "Cerveza artesanal local (ejemplo)",
+   "types": [
+    "urn:entity:brand"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.84
+   },
+   "tags": [
+    {
+     "name": "Craft beer"
+    }
+   ]
+  },
+  {
+   "entity_id": "7431a42e-8952-5225-bc6f-f6ccd6f8b014",
+   "name": "Artista indie (ejemplo)",
+   "types": [
+    "urn:entity:artist"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.9
+   },
+   "tags": [
+    {
+     "name": "Indie pop"
+    }
+   ]
+  },
+  {
+   "entity_id": "db4d6041-a4ba-5093-8fca-f3ed61c8b3fd",
+   "name": "Grupo de cumbia moderna (ejemplo)",
+   "types": [
+    "urn:entity:artist"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.86
+   },
+   "tags": [
+    {
+     "name": "Cumbia"
+    },
+    {
+     "name": "Latin alternative"
+    }
+   ]
+  },
+  {
+   "entity_id": "3b77dc4c-258e-5dc5-ba2b-cef049052b91",
+   "name": "Película de autor (ejemplo)",
+   "types": [
+    "urn:entity:movie"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.8
+   },
+   "tags": [
+    {
+     "name": "Drama"
+    }
+   ]
+  },
+  {
+   "entity_id": "48d7d023-dc5b-5fcb-ba45-d0a00e03d421",
+   "name": "Podcast de cultura urbana (ejemplo)",
+   "types": [
+    "urn:entity:podcast"
+   ],
+   "popularity": 0.5,
+   "query": {
+    "affinity": 0.78
+   },
+   "tags": [
+    {
+     "name": "Culture"
+    }
+   ]
+  }
+ ]
+}
