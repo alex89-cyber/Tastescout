@@ -5,7 +5,8 @@ import os
 import streamlit as st
 from openai import APIStatusError, OpenAI
 
-from agent import COMPARE_PROMPT, SYSTEM_PROMPT, run_agent
+from agent import COMPARE_PROMPT, SYSTEM_PROMPT, make_calendar, run_agent
+from plan_pdf import build_pdf
 from qloo_client import client_from_env
 
 TYPE_LABELS = {
@@ -27,10 +28,20 @@ def secret(name, default=None):
         return os.environ.get(name, default)
 
 
-def entity_card(entity):
-    """Una tarjeta con nombre, detalle y barra de afinidad."""
+def entity_card(entity, shared=None):
+    """Tarjeta con nombre, etiquetas, detalle y barra de afinidad.
+
+    shared: en modo comparar, True si la entidad aparece en ambas zonas.
+    """
+    badges = []
+    if shared is True:
+        badges.append(":gray-badge[En ambas zonas]")
+    elif shared is False:
+        badges.append(":green-badge[Solo en esta zona]")
+    if entity.get("in_zone") is False:
+        badges.append(":orange-badge[Colonia vecina]")
     with st.container(border=True):
-        st.markdown(f"**{entity['name']}**")
+        st.markdown(f"**{entity['name']}** " + " ".join(badges))
         detail = entity.get("address") or ", ".join(entity.get("tags") or [])
         if detail:
             st.caption(detail)
@@ -67,21 +78,51 @@ def render_compare(collected):
         return
     st.subheader("Lo que Qloo encontró en cada zona")
 
-    # Entidades que aparecen en ambas zonas: el público que comparten.
-    names = [{e["name"] for (_, loc), res in groups.items() if loc == z for e in res} for z in zones]
-    shared = sorted(names[0] & names[1])
-    if shared:
-        st.markdown("**En común en ambas zonas:** " + " · ".join(f"`{n}`" for n in shared[:12]))
-
     types = list(dict.fromkeys(t for t, _ in groups))
+    shared, summary = {}, []
+    for etype in types:
+        a, b = ({e["name"] for e in groups.get((etype, z), [])} for z in zones)
+        shared[etype] = a & b
+        unique = len(a ^ b)
+        if a or b:
+            summary.append(f"**{TYPE_LABELS.get(etype, etype)}:** {unique} distintas, {len(a & b)} en común")
+    st.markdown("Diferencias entre zonas por tipo: " + " · ".join(summary))
+    st.caption("Las diferencias suelen estar en lugares y marcas; en artistas y podcasts Qloo usa la zona como una señal más suave.")
+
     for etype in types:
         st.markdown(f"#### {TYPE_LABELS.get(etype, etype)}")
         cols = st.columns(2)
         for col, zone in zip(cols, zones):
             with col:
                 st.caption(zone)
-                for entity in groups.get((etype, zone), [])[:4]:
-                    entity_card(entity)
+                # Primero lo que distingue a la zona, luego lo compartido.
+                entities = sorted(groups.get((etype, zone), [])[:4], key=lambda e: e["name"] in shared[etype])
+                for entity in entities:
+                    entity_card(entity, shared=entity["name"] in shared[etype])
+
+
+def render_calendar_and_pdf(llm, model, answer, title, subtitle):
+    with st.spinner("Armando el calendario de publicaciones…"):
+        try:
+            calendar = make_calendar(llm, model, answer)
+        except Exception:  # el plan ya está; el calendario es un extra
+            calendar = []
+    if calendar:
+        st.subheader("🗓️ Calendario de publicaciones (4 semanas)")
+        st.dataframe(
+            calendar,
+            hide_index=True,
+            width="stretch",
+            column_config={"semana": "Semana", "dia": "Día", "formato": "Formato", "tema": "Tema", "inspiracion": "Inspiración (Qloo)"},
+        )
+    st.download_button(
+        "⬇️ Descargar plan en PDF",
+        data=build_pdf(title, subtitle, answer, calendar),
+        file_name="tastescout-plan.pdf",
+        mime="application/pdf",
+        type="primary",
+        on_click="ignore",
+    )
 
 
 st.set_page_config(page_title="TasteScout", page_icon="🧭", layout="wide")
@@ -152,6 +193,7 @@ if submitted:
     def run(model):
         return run_agent(llm, model, qloo, request, on_step=show_step, system_prompt=prompt)
 
+    model_used = llm_model
     try:
         try:
             answer = run(llm_model)
@@ -161,14 +203,19 @@ if submitted:
             steps.write(f"`{llm_model}` está saturado ({e.status_code}); reintentando con `{llm_fallback}`…")
             qloo.log.clear()
             collected.clear()
+            model_used = llm_fallback
             answer = run(llm_fallback)
         steps.update(label=f"Listo: {len(qloo.log)} consultas a Qloo", state="complete", expanded=False)
         st.markdown(answer)
         st.divider()
         if compare:
             render_compare(collected)
+            subtitle = f"{business} · {zone_a} vs. {zone_b}"
         else:
             render_single(collected)
+            subtitle = f"{business} · {location}"
+        st.divider()
+        render_calendar_and_pdf(llm, model_used, answer, "Plan TasteScout", subtitle)
     except Exception as e:
         steps.update(label="Algo falló", state="error")
         st.error(f"Error: {e}")

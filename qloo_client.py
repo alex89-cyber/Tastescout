@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import unicodedata
 from pathlib import Path
 
 import requests
@@ -25,6 +26,24 @@ ENTITY_TYPES = {
     "book": "urn:entity:book",
     "destination": "urn:entity:destination",
 }
+
+
+def _norm(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text or "").encode("ascii", "ignore").decode()
+    return text.lower()
+
+
+def in_zone(address: str | None, location: str) -> bool | None:
+    """¿La dirección menciona la zona buscada? None si no hay dirección.
+
+    El filtro de ubicación de Qloo es aproximado y a veces trae lugares de
+    colonias vecinas; con esto la app y el agente pueden distinguirlos.
+    """
+    if not address:
+        return None
+    zone = _norm(location.split(",")[0]).split()
+    key = zone[0] if zone and len(zone[0]) > 3 else " ".join(zone)
+    return key in _norm(address)
 
 
 class QlooError(RuntimeError):
@@ -108,7 +127,11 @@ class QlooClient:
             # Para lugares, filtra a la ciudad; para lo demás, usa la ciudad como señal de gusto.
             key = "filter.location.query" if entity_type == "place" else "signal.location.query"
             params[key] = location
-        return [_simplify(e) for e in _results(self._get("/v2/insights", params))]
+        results = [_simplify(e) for e in _results(self._get("/v2/insights", params))]
+        if entity_type == "place" and location:
+            for r in results:
+                r["in_zone"] = in_zone(r.get("address"), location)
+        return results
 
 
 def client_from_env(get_secret=None) -> QlooClient:

@@ -26,6 +26,12 @@ partner with, and how to talk to your audience. Built for the Qloo Agentic Hacka
 locations for the same business. The agent runs the same Qloo queries for both
 zones, the app shows their cards side by side plus the entities they share, and
 the agent gives a verdict on where to open and how to adapt the business to each.
+Each card is tagged "only in this zone" or "in both zones", and places that Qloo
+returns from a neighboring area are tagged too (the agent is told about them).
+
+**Actionable plan:** after each analysis the agent turns the plan into a 4-week
+social media calendar (12 posts, each tied to a Qloo entity) and the app offers a
+one-page PDF with the plan and the calendar, ready to share with the team.
 
 The UI and generated plans are in Spanish (target users are small businesses in
 Mexico City); the agent answers in the user's language.
@@ -68,7 +74,8 @@ Without `QLOO_API_KEY` the app runs in demo mode with fake sample data
 
 - `app.py` — Streamlit UI
 - `agent.py` — tool-calling agent loop and system prompt
-- `qloo_client.py` — minimal Qloo API client (server-side key, call log)
+- `qloo_client.py` — minimal Qloo API client (server-side key, call log, in-zone check)
+- `plan_pdf.py` — PDF export of the plan and calendar
 - `mock_data.json` — fake data for demo mode
 
 ## License

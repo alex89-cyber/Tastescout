@@ -28,6 +28,9 @@ Cómo trabajas:
    Describe al público a partir de las entidades con más afinidad y nómbralas.
    Si sugieres algo que es tu interpretación y no un dato, márcalo como
    "(sugerencia)".
+4. Los lugares traen "in_zone": si es false, el lugar está cerca pero fuera
+   de la zona; prioriza los que tienen true y, si mencionas uno con false,
+   di que está en una colonia vecina.
 
 Formato de la respuesta final (Markdown, en el idioma del usuario):
 ## Quién es tu público
@@ -49,6 +52,11 @@ Cómo trabajas:
    de referencia. Así la comparación es justa.
 3. Responde SOLO con base en lo que regresó Qloo. No inventes entidades ni
    rasgos del público. Marca tus interpretaciones como "(sugerencia)".
+4. Los lugares traen "in_zone": si es false, el lugar está cerca pero fuera
+   de la zona; prioriza los que tienen true y, si mencionas uno con false,
+   di que está en una colonia vecina.
+5. Artistas y podcasts suelen variar poco entre zonas; busca las diferencias
+   sobre todo en lugares y marcas.
 
 Formato de la respuesta final (Markdown, en el idioma del usuario):
 ## Veredicto
@@ -162,3 +170,29 @@ def run_agent(
     messages.append({"role": "user", "content": "Ya no consultes más. Da tu respuesta final."})
     reply = llm.chat.completions.create(model=model, messages=messages)
     return reply.choices[0].message.content or ""
+
+
+CALENDAR_PROMPT = """Con base en el plan de abajo, arma un calendario de publicaciones
+en redes sociales de 4 semanas, 3 publicaciones por semana (12 en total).
+Usa solo las entidades de Qloo y las ideas que aparecen en el plan.
+
+Responde SOLO con un arreglo JSON, sin texto extra ni bloques de código, así:
+[{"semana": 1, "dia": "Lunes", "formato": "Reel", "tema": "...", "inspiracion": "entidad de Qloo o idea del plan"}]
+
+Plan:
+"""
+
+
+def make_calendar(llm: OpenAI, model: str, plan: str) -> list[dict]:
+    """Calendario de 4 semanas a partir del plan. Lista vacía si el LLM no da JSON válido."""
+    reply = llm.chat.completions.create(
+        model=model, messages=[{"role": "user", "content": CALENDAR_PROMPT + plan}]
+    )
+    text = reply.choices[0].message.content or ""
+    start, end = text.find("["), text.rfind("]")
+    try:
+        rows = json.loads(text[start : end + 1])
+    except ValueError:
+        return []
+    keys = ("semana", "dia", "formato", "tema", "inspiracion")
+    return [{k: row.get(k, "") for k in keys} for row in rows if isinstance(row, dict)]
