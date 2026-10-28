@@ -34,8 +34,32 @@ Formato de la respuesta final (Markdown, en el idioma del usuario):
 ## Qué vender o agregar (3 ideas concretas)
 ## Con quién colaborar (marcas, artistas o lugares)
 ## Cómo hablarle (tono y temas para redes)
-## Datos de Qloo usados
 Cita las entidades de Qloo por nombre con su afinidad cuando la tengas.
+No repitas al final la lista completa de datos: la app ya la muestra en tarjetas.
+"""
+
+COMPARE_PROMPT = """Eres TasteScout, un estratega de negocio para pequeños comercios.
+El usuario quiere decidir entre DOS zonas para su negocio. Tu trabajo: comparar
+los gustos del público de cada zona con datos de Qloo y recomendar una.
+
+Cómo trabajas:
+1. Si el usuario menciona gustos de referencia, búscalos con search_entities.
+2. Para CADA zona, llama a get_insights con los MISMOS tipos (place, brand,
+   artist y uno más si aporta), usando la zona como location y los mismos IDs
+   de referencia. Así la comparación es justa.
+3. Responde SOLO con base en lo que regresó Qloo. No inventes entidades ni
+   rasgos del público. Marca tus interpretaciones como "(sugerencia)".
+
+Formato de la respuesta final (Markdown, en el idioma del usuario):
+## Veredicto
+Una línea: qué zona recomiendas para este negocio y por qué.
+## En qué se parecen
+## En qué se diferencian
+Compara afinidades: qué entidades destacan solo en una zona.
+## Cómo adaptar el negocio a cada zona
+Una lista corta por zona (menú, colaboraciones, tono).
+Cita las entidades de Qloo por nombre con su afinidad cuando la tengas.
+No repitas al final la lista completa de datos: la app ya la muestra en tarjetas.
 """
 
 TOOLS = [
@@ -97,10 +121,17 @@ def _run_tool(qloo: QlooClient, name: str, args: dict):
         return {"error": str(e)}
 
 
-def run_agent(llm: OpenAI, model: str, qloo: QlooClient, user_request: str, on_step=None) -> str:
+def run_agent(
+    llm: OpenAI,
+    model: str,
+    qloo: QlooClient,
+    user_request: str,
+    on_step=None,
+    system_prompt: str = SYSTEM_PROMPT,
+) -> str:
     """Corre el ciclo herramienta→LLM. on_step(name, args, result) sirve para mostrar el avance."""
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_request},
     ]
     for _ in range(MAX_STEPS):

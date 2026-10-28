@@ -19,7 +19,13 @@ partner with, and how to talk to your audience. Built for the Qloo Agentic Hacka
 3. The agent writes a plan grounded only in Qloo results: audience profile,
    3 things to sell, partnerships, social media tone, and the Qloo data used.
    Its own interpretations are labeled "(sugerencia)".
-4. The UI shows every agent step and the exact Qloo API calls, so nothing is a black box.
+4. The UI shows the Qloo results as visual cards (top entities per type with an
+   affinity bar), every agent step, and the exact Qloo API calls, so nothing is a black box.
+
+**Compare two neighborhoods:** switch to "Comparar dos zonas" to evaluate two
+locations for the same business. The agent runs the same Qloo queries for both
+zones, the app shows their cards side by side plus the entities they share, and
+the agent gives a verdict on where to open and how to adapt the business to each.
 
 The UI and generated plans are in Spanish (target users are small businesses in
 Mexico City); the agent answers in the user's language.
