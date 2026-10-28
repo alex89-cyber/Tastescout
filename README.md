@@ -1,39 +1,70 @@
 # TasteScout 🧭
 
-Agente de IA para pequeños negocios: le das tu giro y tu zona, consulta los gustos
-de la gente en Qloo Taste AI™ y te dice qué vender, con quién colaborar y cómo
-comunicarte. Hecho con Python, Streamlit y un LLM con llamadas a herramientas.
+**Live demo:** https://tastescout-adiof9vm6xlqkuungpetrq.streamlit.app
 
-## Cómo funciona
+An AI agent for small businesses. Tell it your business and your neighborhood; it
+queries Qloo's Taste AI™ to map what people around you love (places, brands,
+music, podcasts) and turns that into a concrete plan: what to sell, who to
+partner with, and how to talk to your audience. Built for the Qloo Agentic Hackathon.
 
-1. El usuario escribe negocio, ubicación, gustos de referencia y objetivo.
-2. El LLM decide qué consultar y llama a dos herramientas:
-   - `search_entities` → `GET /search` (convierte "Bad Bunny" en un ID de Qloo)
-   - `get_insights` → `GET /v2/insights` (lugares, marcas, artistas… con afinidad,
-     usando la ubicación y los IDs como señales)
-3. Con los resultados, el LLM escribe un plan: público, qué vender, colaboraciones,
-   tono en redes y los datos de Qloo que usó.
-4. La app muestra cada paso del agente y las llamadas exactas a la API.
+## How it works
 
-## Probar en tu compu (Windows)
+1. The user enters a business type, a location, optional reference tastes
+   (e.g. "Bad Bunny, Blue Bottle Coffee") and a goal.
+2. An LLM agent with tool calling decides what to query and calls two tools:
+   - `search_entities` → `GET /search` (resolves "Bad Bunny" to a Qloo entity ID)
+   - `get_insights` → `GET /v2/insights` (places, brands, artists, podcasts… with
+     affinity scores, using the location and reference IDs as signals; places are
+     filtered to the neighborhood with `filter.location.query`)
+3. The agent writes a plan grounded only in Qloo results: audience profile,
+   3 things to sell, partnerships, social media tone, and the Qloo data used.
+   Its own interpretations are labeled "(sugerencia)".
+4. The UI shows every agent step and the exact Qloo API calls, so nothing is a black box.
 
-```powershell
-cd tastescout
+The UI and generated plans are in Spanish (target users are small businesses in
+Mexico City); the agent answers in the user's language.
+
+## Run locally
+
+Requires Python 3.10+.
+
+```bash
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-copy .streamlit\secrets.toml.example .streamlit\secrets.toml
-notepad .streamlit\secrets.toml      # pega tu key de Qloo y la del LLM
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+# edit .streamlit/secrets.toml with your Qloo key and an LLM key
 streamlit run app.py
 ```
 
-Sin `QLOO_API_KEY`, la app entra en modo de prueba con datos falsos
-(`mock_data.json`), para revisar la interfaz.
+Without `QLOO_API_KEY` the app runs in demo mode with fake sample data
+(`mock_data.json`) so you can try the interface.
 
-## Desplegar en Streamlit Community Cloud
+### Configuration (`.streamlit/secrets.toml`)
 
-1. Sube esta carpeta a un repo público de GitHub. **No subas `secrets.toml`**
-   (ya está en `.gitignore`).
-2. Entra a https://share.streamlit.io → **Create app** → elige el repo y `app.py`.
-3. En **Advanced settings → Secrets**, pega el contenido de tu `secrets.toml`.
-4. Deploy. Esa URL pública es la que va en Devpost.
+| Key | Description |
+|---|---|
+| `QLOO_API_KEY` | Qloo hackathon API key |
+| `QLOO_BASE_URL` | Defaults to `https://hackathon.api.qloo.com` |
+| `LLM_API_KEY` | Key for any OpenAI-compatible LLM provider |
+| `LLM_BASE_URL` | e.g. Gemini: `https://generativelanguage.googleapis.com/v1beta/openai/` (empty = OpenAI) |
+| `LLM_MODEL` | e.g. `gemini-flash-latest` |
+| `LLM_FALLBACK_MODEL` | Optional backup model used if the main one returns 429/5xx |
+
+## Deploy on Streamlit Community Cloud
+
+1. Fork this repo. Never commit `secrets.toml` (it is in `.gitignore`).
+2. Go to https://share.streamlit.io → **Create app** → pick the repo and `app.py`.
+3. In **Advanced settings → Secrets**, paste your `secrets.toml` contents.
+4. Deploy.
+
+## Project structure
+
+- `app.py` — Streamlit UI
+- `agent.py` — tool-calling agent loop and system prompt
+- `qloo_client.py` — minimal Qloo API client (server-side key, call log)
+- `mock_data.json` — fake data for demo mode
+
+## License
+
+MIT — see [LICENSE](LICENSE).
